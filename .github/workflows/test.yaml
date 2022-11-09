@@ -1,0 +1,25 @@
+# The name of our workflow
+name: Test
+on:
+  push:
+env:
+  AMI : "ami-0acf3d8ed5bf3ec9d" # msitest-agent-windows-server-2022-1
+  AWS_REGION : "eu-west-1"
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkoutjobs:
+jobs:
+  AWSTest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v3
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          role-to-assume: arn:aws:iam::217307881341:role/GitHubActions
+          role-session-name: githubactions
+          aws-region: ${{ env.AWS_REGION }}
+      - name: run instance
+        run: |
+          aws ec2 run-instances --image-id ${AMI} --instance-type t3.micro
