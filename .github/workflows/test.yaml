@@ -36,4 +36,7 @@ jobs:
       - name: Run AWS test
         working-directory: openvpn-windows-test
         shell: pwsh
-        run: .\Start-AWSTest.ps1
+        run: |
+          Install-Module -Name AWS.Tools.Installer -Force
+          Install-AWSToolsModule AWS.Tools.EC2 -Force
+          .\Start-AWSTest.ps1
