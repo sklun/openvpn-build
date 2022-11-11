@@ -21,10 +21,11 @@ jobs:
           role-session-name: githubactions
           aws-region: ${{ env.AWS_REGION }}
           
-      - name: create .ssh directory
-        run: |
-          mkdir ~/.ssh
-          chmod 700 ~/.ssh
+      - name: Install SSH key for tclient host
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_KEY_FOR_TCLIENT_HOST }}
+          known_hosts: unnecessary
 
       - name: Clone openvpn-windows-test repo
         uses: actions/checkout@v3
@@ -44,4 +45,4 @@ jobs:
         run: |
           Install-Module -Name AWS.Tools.Installer -Force
           Install-AWSToolsModule AWS.Tools.EC2 -Force
-          .\Start-AWSTest.ps1
+          .\Start-AWSTest.ps1 -SSH_KEY ~\.ssh\id_rsa
