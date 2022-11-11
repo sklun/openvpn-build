@@ -20,6 +20,7 @@ jobs:
           role-to-assume: arn:aws:iam::217307881341:role/GitHubActions
           role-session-name: githubactions
           aws-region: ${{ env.AWS_REGION }}
+
       - name: Clone openvpn-windows-test repo
         uses: actions/checkout@v3
         with:
@@ -28,11 +29,11 @@ jobs:
           path: openvpn-windows-test
         
       - name: fetch MSI from build workflow
-        working-directory: test
+        working-directory: openvpn-windows-test
         shell: pwsh
         run: Invoke-WebRequest https://build.openvpn.net/downloads/snapshots/github-actions/openvpn2/openvpn-master-20221111T0935-199081c2-amd64.msi -OutFile OpenVPN-2.6git-amd64.msi
       
       - name: Run AWS test
-        working-directory: test
+        working-directory: openvpn-windows-test
         shell: pwsh
         run: .\Start-AWSTest.ps1
