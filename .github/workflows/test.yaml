@@ -29,8 +29,10 @@ jobs:
         
       - name: fetch MSI from build workflow
         working-directory: test
+        shell: pwsh
         run: Invoke-WebRequest https://build.openvpn.net/downloads/snapshots/github-actions/openvpn2/openvpn-master-20221111T0935-199081c2-amd64.msi -OutFile OpenVPN-2.6git-amd64.msi
       
       - name: Run AWS test
         working-directory: test
+        shell: pwsh
         run: .\Start-AWSTest.ps1
