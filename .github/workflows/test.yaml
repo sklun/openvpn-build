@@ -20,6 +20,11 @@ jobs:
           role-to-assume: arn:aws:iam::217307881341:role/GitHubActions
           role-session-name: githubactions
           aws-region: ${{ env.AWS_REGION }}
+          
+      - name: create .ssh directory
+        run: |
+          mkdir ~/.ssh
+          chmod 700 ~/.ssh
 
       - name: Clone openvpn-windows-test repo
         uses: actions/checkout@v3
