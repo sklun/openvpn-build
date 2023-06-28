@@ -8,7 +8,11 @@ on:
 
 permissions:
   id-token: write   # This is required for requesting the JWT
-  contents: read    # This is required for actions/checkoutjobs:
+  contents: write   # read for actions/checkoutjobs, write for vcpkg dependencygraph
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  VCPKG_FEATURE_FLAGS: dependencygraph
 
 jobs:
   msvc:
