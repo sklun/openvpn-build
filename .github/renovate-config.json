@@ -7,7 +7,11 @@
     "onboarding": true,
     "onboardingBranch": "renovate/configure",
     "platform": "github",
-    "repositories": [],
+    "repositories": [
+        "OpenVPN/openvpn-build",
+        "OpenVPN/openvpn",
+        "OpenVPN/openvpn3"
+    ],
     "git-submodules": {
         "enabled": true
     }
