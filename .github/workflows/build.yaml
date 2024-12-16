@@ -2,6 +2,7 @@
 name: Build
 on:
   workflow_dispatch:
+  push:
 
 permissions:
   id-token: write   # This is required for requesting the JWT
@@ -165,92 +166,92 @@ jobs:
           privateKey: ${{ secrets.MSI_UPLOAD_PRIVATE_KEY }}
           passphrase: ${{ secrets.MSI_UPLOAD_KEY_PASSPHRASE }}
 
-  debian:
-    name: Build Debian packages
-    runs-on: ubuntu-latest
-    env:
-      CHROOT_CONF: chroots/chroot.d.tar
-      OPENVPN_CURRENT_TAG: HEAD
-      OPENVPN_DCO_CURRENT_TAG: HEAD
-      USE_LOCAL_SOURCE: 1
+  # debian:
+  #   name: Build Debian packages
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     CHROOT_CONF: chroots/chroot.d.tar
+  #     OPENVPN_CURRENT_TAG: HEAD
+  #     OPENVPN_DCO_CURRENT_TAG: HEAD
+  #     USE_LOCAL_SOURCE: 1
 
-    steps:
-      - name: Checkout openvpn-build
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-        with:
-          fetch-depth: 0
-          submodules: true
+  #   steps:
+  #     - name: Checkout openvpn-build
+  #       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+  #       with:
+  #         fetch-depth: 0
+  #         submodules: true
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          # for sbuild
-          sudo apt-get install -y sbuild git quilt debhelper dkms
-          # for ./configure && make dist
-          sudo apt-get install -y autoconf automake libcap-ng-dev libssl-dev python3-docutils
+  #     - name: Install dependencies
+  #       run: |
+  #         sudo apt-get update
+  #         # for sbuild
+  #         sudo apt-get install -y sbuild git quilt debhelper dkms
+  #         # for ./configure && make dist
+  #         sudo apt-get install -y autoconf automake libcap-ng-dev libssl-dev python3-docutils
 
-      - name: Prepare release files
-        working-directory: release
-        run: |
-          ln -s vars.example vars
-          mkdir ../output
-          # we need to have ability to git tag the versions
-          # we do not push those tags
-          git config --global user.name "gha_user"
-          git config --global user.email "gha@openvpn.invalid"
-          ./version-and-tags.sh
-          ./create-release-files.sh
+  #     - name: Prepare release files
+  #       working-directory: release
+  #       run: |
+  #         ln -s vars.example vars
+  #         mkdir ../output
+  #         # we need to have ability to git tag the versions
+  #         # we do not push those tags
+  #         git config --global user.name "gha_user"
+  #         git config --global user.email "gha@openvpn.invalid"
+  #         ./version-and-tags.sh
+  #         ./create-release-files.sh
 
-      # So that the caches expire after a while
-      - name: Get Date for cache key
-        id: get-date
-        run: |
-          echo "date=$(/bin/date -u '+%Y%m')" >> $GITHUB_OUTPUT
+  #     # So that the caches expire after a while
+  #     - name: Get Date for cache key
+  #       id: get-date
+  #       run: |
+  #         echo "date=$(/bin/date -u '+%Y%m')" >> $GITHUB_OUTPUT
 
-      - name: Restore cached chroots
-        id: chroots-restore
-        uses: actions/cache/restore@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
-        with:
-          path: |
-            debian-sbuild/chroots
-          key: chroots-${{ hashFiles('**/config/variants.amd64.conf') }}-${{ steps.get-date.outputs.date }}
-          restore-keys: |
-            chroots-${{ hashFiles('**/config/variants.amd64.conf') }}-
-            chroots-
+  #     - name: Restore cached chroots
+  #       id: chroots-restore
+  #       uses: actions/cache/restore@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+  #       with:
+  #         path: |
+  #           debian-sbuild/chroots
+  #         key: chroots-${{ hashFiles('**/config/variants.amd64.conf') }}-${{ steps.get-date.outputs.date }}
+  #         restore-keys: |
+  #           chroots-${{ hashFiles('**/config/variants.amd64.conf') }}-
+  #           chroots-
 
-      - name: Prepare environment
-        working-directory: debian-sbuild
-        run: |
-          [ ! -f "$CHROOT_CONF" ] || ( tar -xvf "$CHROOT_CONF" -C chroots; sudo install -m644 chroots/chroot.d/* /etc/schroot/chroot.d/ )
-          sudo chown root:root chroots/*.tar.gz || true
-          scripts/setup.sh
-          sudo scripts/setup_chroots.sh
-          sudo scripts/update-all.sh
-          sudo sbuild-adduser runner
-          tar -cvf "$CHROOT_CONF" -C /etc/schroot/ chroot.d/
+  #     - name: Prepare environment
+  #       working-directory: debian-sbuild
+  #       run: |
+  #         [ ! -f "$CHROOT_CONF" ] || ( tar -xvf "$CHROOT_CONF" -C chroots; sudo install -m644 chroots/chroot.d/* /etc/schroot/chroot.d/ )
+  #         sudo chown root:root chroots/*.tar.gz || true
+  #         scripts/setup.sh
+  #         sudo scripts/setup_chroots.sh
+  #         sudo scripts/update-all.sh
+  #         sudo sbuild-adduser runner
+  #         tar -cvf "$CHROOT_CONF" -C /etc/schroot/ chroot.d/
 
-      - name: Save chroots
-        if: steps.chroots-restore.outputs.cache-hit != 'true'
-        id: chroots-save
-        uses: actions/cache/save@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
-        with:
-          path: |
-            debian-sbuild/chroots
-          key: ${{ steps.chroots-restore.outputs.cache-primary-key }}
+  #     - name: Save chroots
+  #       if: steps.chroots-restore.outputs.cache-hit != 'true'
+  #       id: chroots-save
+  #       uses: actions/cache/save@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+  #       with:
+  #         path: |
+  #           debian-sbuild/chroots
+  #         key: ${{ steps.chroots-restore.outputs.cache-primary-key }}
 
-      - name: Prepare package build
-        working-directory: debian-sbuild
-        run: |
-          scripts/prepare-all.sh
+  #     - name: Prepare package build
+  #       working-directory: debian-sbuild
+  #       run: |
+  #         scripts/prepare-all.sh
 
-      - name: Build packages
-        working-directory: debian-sbuild
-        run: |
-          sg sbuild ./scripts/build-all.sh
+  #     - name: Build packages
+  #       working-directory: debian-sbuild
+  #       run: |
+  #         sg sbuild ./scripts/build-all.sh
 
-      - name: Archive packages
-        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
-        with:
-          name: openvpn-debian
-          path: |
-            output
+  #     - name: Archive packages
+  #       uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
+  #       with:
+  #         name: openvpn-debian
+  #         path: |
+  #           output
