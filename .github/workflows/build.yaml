@@ -26,7 +26,12 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
+      - name: Update submodules
+        run: |
+          git submodule update --init --recursive
+          git submodule update --remote src/openvpn
 
+          
       - name: Restore from cache and install vcpkg
         uses: lukka/run-vcpkg@5e0cab206a5ea620130caf672fce3e4a6b5666a1 # v11.5
         with:
